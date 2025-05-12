@@ -3,6 +3,7 @@ using Mango.Services.ShoppingCartAPI.Data;
 using Mango.Services.ShoppingCartAPI.Models;
 using Mango.Services.ShoppingCartAPI.Models.Dto;
 using Mango.Services.ShoppingCartAPI.Service;
+using Mango.Services.ShoppingCartAPI.Service.IService;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -16,14 +17,14 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
         private IMapper _mapper;
         private readonly AppDbContext _db;
         private ResponseDto _response;
-        private readonly CouponService _couponService;
-        private readonly ProductService _productService;
+        private readonly ICouponService _couponService;
+        private readonly IProductService _productService;
 
-        public CartAPIController(IMapper mapper, AppDbContext db, ResponseDto response, CouponService couponService, ProductService productService)
+        public CartAPIController(IMapper mapper, AppDbContext db, ICouponService couponService, IProductService productService)
         {
             _mapper = mapper;
             _db = db;
-            _response = response;
+            _response = new ResponseDto();
             _couponService = couponService;
             _productService = productService;
         }

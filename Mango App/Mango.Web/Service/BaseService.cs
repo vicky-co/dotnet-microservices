@@ -57,6 +57,8 @@ namespace Mango.Web.Service
                 }
 
                 apiResponse = await client.SendAsync(message);
+                var rawContent = await apiResponse.Content.ReadAsStringAsync();
+
 
                 switch (apiResponse.StatusCode)
                 {
