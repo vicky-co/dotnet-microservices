@@ -3,35 +3,33 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 
-namespace Mango.Services.ProductAPI.Extenstions
+namespace Mango.Services.ShoppingCartAPI.Extensions
 {
     public static class WebApplicationBuilderExtensions
     {
-        public static WebApplicationBuilder AddAppAuthentication(this WebApplicationBuilder builder)
+        public static WebApplicationBuilder AddAppAuthetication(this WebApplicationBuilder builder)
         {
-            var settingSection = builder.Configuration.GetSection("ApiSettings");
+            var settingsSection = builder.Configuration.GetSection("ApiSettings");
 
-            var secret = settingSection.GetValue<string>("Secret");
-            var issuer = settingSection.GetValue<string>("Issuer");
-            var audience = settingSection.GetValue<string>("Audience");
+            var secret = settingsSection.GetValue<string>("Secret");
+            var issuer = settingsSection.GetValue<string>("Issuer");
+            var audience = settingsSection.GetValue<string>("Audience");
 
             var key = Encoding.ASCII.GetBytes(secret);
-
             builder.Services.AddAuthentication(x =>
             {
                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             }).AddJwtBearer(x =>
             {
-                x.TokenValidationParameters = new TokenValidationParameters
+                x.TokenValidationParameters = new TokenValidationParameters()
                 {
-                    ValidateIssuer = true,
-                    ValidIssuer = issuer,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuerSigningKey = true,
                     ValidateAudience = true,
                     ValidAudience = audience,
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(key)
-                    
+                    ValidateIssuer = true,
+                    ValidIssuer = issuer,
                 };
             });
 
@@ -70,6 +68,5 @@ namespace Mango.Services.ProductAPI.Extenstions
 
             return builder;
         }
-
     }
 }
