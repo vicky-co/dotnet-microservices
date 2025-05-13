@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Mango.MessageBus;
 using Mango.Services.ShoppingCartAPI.Data;
 using Mango.Services.ShoppingCartAPI.Models;
 using Mango.Services.ShoppingCartAPI.Models.Dto;
@@ -7,6 +8,7 @@ using Mango.Services.ShoppingCartAPI.Service.IService;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace Mango.Services.ShoppingCartAPI.Controllers
 {
@@ -19,14 +21,18 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
         private ResponseDto _response;
         private readonly ICouponService _couponService;
         private readonly IProductService _productService;
+        private readonly IConfiguration _configuration;
+        private readonly IMessageBus _messageBus;
 
-        public CartAPIController(IMapper mapper, AppDbContext db, ICouponService couponService, IProductService productService)
+        public CartAPIController(IMapper mapper, AppDbContext db, ICouponService couponService, IProductService productService, IConfiguration configuration, IMessageBus messageBus)
         {
             _mapper = mapper;
             _db = db;
             _response = new ResponseDto();
             _couponService = couponService;
             _productService = productService;
+            _configuration = configuration;
+            _messageBus = messageBus;
         }
 
         [HttpGet("GetCart/{userId}")]
@@ -88,6 +94,24 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
             }
             return _response;
         }
+
+        [HttpPost("EmailCartRequest")]
+        public async Task<object> EmailCartRequest([FromBody] CartDto cartDto)
+        {
+            try
+            {
+                await _messageBus.PublishMessage(cartDto, _configuration.GetValue<string>("TopicAndQueueNames:EmailShoppingCart"));
+                _response.Result = true;
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.ToString();
+            }
+            return _response;
+        }
+
+
 
 
         [HttpPost("CartUpsert")]

@@ -1,0 +1,27 @@
+﻿
+using Azure.Messaging.ServiceBus;
+using Newtonsoft.Json;
+using System.Text;
+using System.Text.Json.Serialization;
+
+namespace Mango.MessageBus
+{
+    public class MessageBus : IMessageBus
+    {
+        private readonly string _serviceBusConnectionStringProperties = "Endpoint=sb://webmicroproj.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=OCLXT9szaamn0WKNDr/PvARHBB/XerZP3+ASbIqIaoE=";
+
+        public async Task PublishMessage(object message, string topic_queue_Name)
+        {
+            await using var client = new ServiceBusClient(_serviceBusConnectionStringProperties);
+
+            ServiceBusSender sender = client.CreateSender(topic_queue_Name);
+            var jsonMessage = JsonConvert.SerializeObject(message);
+            ServiceBusMessage finalMessage = new(Encoding.UTF8.GetBytes(jsonMessage))
+            {
+                CorrelationId = Guid.NewGuid().ToString()
+            };
+
+            await sender.SendMessageAsync(finalMessage);
+        }
+    }
+}
