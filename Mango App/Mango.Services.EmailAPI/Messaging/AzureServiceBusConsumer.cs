@@ -1,5 +1,8 @@
 ﻿using Azure.Messaging.ServiceBus;
+using Mango.Services.EmailAPI.Models.Dto;
 using Mango.Services.EmailAPI.Services;
+using Newtonsoft.Json;
+using System.Text;
 
 namespace Mango.Services.EmailAPI.Messaging
 {
@@ -25,20 +28,42 @@ namespace Mango.Services.EmailAPI.Messaging
             _emailCartProcessor = client.CreateProcessor(emailCartQueue);
         }
 
-        public Task Start()
+        public async Task Start()
         {
-            _emailCartProcessor.ProcessMessageAsync += emailMessages;
-            throw new NotImplementedException();
+            _emailCartProcessor.ProcessMessageAsync += OnEmailCartQueueReceived;
+            _emailCartProcessor.ProcessErrorAsync += HandleErrorOnCartQueue;
+            await _emailCartProcessor.StartProcessingAsync();
         }
 
-        private async Task emailMessages(ProcessMessageEventArgs args)
+        private Task HandleErrorOnCartQueue(ProcessErrorEventArgs args)
         {
-            throw new NotImplementedException();
+            Console.WriteLine(args.Exception.ToString());
+            return Task.CompletedTask;
         }
 
-        public Task Stop()
+        private async Task OnEmailCartQueueReceived(ProcessMessageEventArgs args)
         {
-            throw new NotImplementedException();
+            var message = args.Message;
+            var body = Encoding.UTF8.GetString(message.Body);
+
+            CartDto objMessage = JsonConvert.DeserializeObject<CartDto>(body);
+            try
+            {
+                await _emailService.EmailCartAndLog(objMessage);
+                await args.CompleteMessageAsync(message);
+            }
+            catch (Exception )
+            {
+
+                throw;
+            }
+
+        }
+
+        public async Task Stop()
+        {
+            await _emailCartProcessor.StopProcessingAsync();
+            await _emailCartProcessor.DisposeAsync();
         }
     }
 }
