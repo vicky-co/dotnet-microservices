@@ -33,24 +33,23 @@
 				</tr>
 			</thead>
 			<tbody>
-				@foreach(var coupon in Model)
+				@foreach(var item in Model)
 				{
-					<tr>
-						<td>@coupon.CouponCode
-						</td>
-						<td>@(coupon.DiscountAmount.ToString("c"))
-						</td>
+				<tr>
+					<td> @item.CouponCode
+					</td>
+					<td> @((item.DiscountAmount).ToString("c"))
+					</td>
 						<td>
-							@(coupon.MinAmount.ToString("c"))
-						</td>
-						<td>
-							<a class="btn btn-danger" asp-action="CouponDelete" asp-route-couponId="@coupon.CouponId">
-								<i class="bi bi-trash"></i>
-							</a>
-						</td>
-					</tr>
+							@((item.MinAmount).ToString("c"))
+					</td>
+					<td>
+							<a asp-action="CouponDelete" asp-route-couponId="@item.CouponId" class="btn btn-danger">
+							<i class="bi bi-trash"></i>
+						</a>
+					</td>
+				</tr>
 				}
-
 			</tbody>
 		</table>
 
